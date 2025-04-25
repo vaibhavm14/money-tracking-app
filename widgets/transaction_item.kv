@@ -1,0 +1,78 @@
+#:import get_color utils.theme.get_color
+#:import dp kivy.metrics.dp
+
+<TransactionItem>:
+    size_hint_y: None
+    height: dp(60) # Slightly taller
+    padding: dp(10)
+    spacing: dp(10)
+    canvas.before:
+        Color:
+            rgba: get_color(app.theme, "list_item_bg")
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(5)] # Subtle rounding
+
+    BoxLayout: # Container for text labels
+        orientation: 'vertical'
+        size_hint_x: 0.85 # Take most space
+        spacing: dp(2) # Small spacing between text lines
+
+        BoxLayout: # Top row: Description and Amount
+            Label:
+                text: root.description
+                font_size: '16sp'
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.width, None
+                shorten: True # Ellipsize if too long
+                shorten_from: 'right'
+                size_hint_x: 0.7
+                color: get_color(app.theme, "text_color")
+            Label:
+                text: f"{root.amount} {root.currency}"
+                font_size: '16sp'
+                halign: 'right'
+                valign: 'middle'
+                text_size: self.width, None
+                size_hint_x: 0.3
+                color: (0.1, 0.7, 0.1, 1) if root.transaction_type == 'Credit' else (0.9, 0.1, 0.1, 1) # Green/Red
+                bold: True
+
+        BoxLayout: # Bottom row: Type and Date
+            Label:
+                text: root.transaction_type
+                font_size: '12sp'
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.width, None
+                size_hint_x: 0.5
+                color: get_color(app.theme, "text_color")[:3] + [0.7] # Slightly faded
+            Label:
+                # Show only date part, check if date string is long enough
+                text: root.date.split(' ')[0] if ' ' in root.date else root.date
+                font_size: '12sp'
+                halign: 'right'
+                valign: 'middle'
+                text_size: self.width, None
+                size_hint_x: 0.5
+                color: get_color(app.theme, "text_color")[:3] + [0.7] # Slightly faded
+
+    Button: # Delete Button
+        id: delete_button
+        size_hint_x: 0.15 # Slightly wider for touch
+        background_color: [0,0,0,0] # Transparent background
+        background_normal: ""
+        background_down: "assets/delete_icon_pressed.png" if root.delete_callback else "" # Optional pressed state
+        on_press: root.trigger_delete()
+        disabled: not root.delete_callback # Disable if no callback provided
+        Image:
+            source: "assets/delete_icon.png" # Make sure this icon exists
+            center_x: self.parent.center_x
+            center_y: self.parent.center_y
+            size_hint: None, None
+            size: dp(24), dp(24) # Adjust icon size
+            allow_stretch: True
+            keep_ratio: True
+            color: get_color(app.theme, "error_color") # Color the icon

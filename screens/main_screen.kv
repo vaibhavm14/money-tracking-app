@@ -1,0 +1,110 @@
+#:import get_color utils.theme.get_color
+#:import TransactionItem widgets.transaction_item.TransactionItem
+#:import dp kivy.metrics.dp
+
+<MainScreen>:
+    canvas.before:
+        Color:
+            rgba: get_color(app.theme, "bg_color")
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+
+        # Header: Title, Balance, Theme Toggle
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: [dp(5), 0]
+            Label:
+                text: "Transactions"
+                font_size: '24sp'
+                bold: True
+                size_hint_x: 0.5
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.width, None
+                color: get_color(app.theme, "text_color")
+            Label:
+                text: f"Balance: {root.total_balance:.2f}" # Format balance
+                font_size: '16sp'
+                size_hint_x: 0.35 # Adjusted size
+                halign: 'right'
+                valign: 'middle'
+                text_size: self.width, None
+                color: get_color(app.theme, "text_color")
+                padding: [dp(0), dp(10)] # Use padding instead [padding_x, padding_y]
+            Button:
+                size_hint_x: None
+                width: dp(40)
+                background_color: [0,0,0,0] # Transparent
+                background_normal: ""
+                on_press: app.toggle_theme()
+                Image:
+                    source: "assets/theme_icon.png" # Add a theme toggle icon (e.g., sun/moon)
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: dp(24), dp(24)
+                    color: get_color(app.theme, "text_color")
+
+        # --- Restored RecycleView ---
+        RecycleView:
+            id: rv
+            viewclass: 'TransactionItem' # Use the custom widget
+            data: root.transactions_data # Bind to the ListProperty
+            scroll_type: ['bars', 'content']
+            scroll_wheel_distance: dp(114)
+            bar_width: dp(10)
+            bar_color: get_color(app.theme, "primary_color")[:3] + [0.7]
+            RecycleBoxLayout:
+                default_size: None, dp(60) # Height of TransactionItem
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(5) # Spacing between items
+                padding: [dp(5), dp(5)] # Padding around the list items
+
+        # --- Restored Footer Buttons ---
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: [dp(5), dp(5)]
+            spacing: dp(10)
+            Button:
+                text: "Analysis"
+                background_color: get_color(app.theme, "accent_color")
+                color: get_color(app.theme, "button_text")
+                background_normal: ''
+                background_down: ''
+                canvas.before:
+                    Color:
+                        rgba: get_color(app.theme, "accent_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "accent_color")[:3]] + [1]
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(5)]
+                on_press: root.go_to_analysis()
+            Button:
+                text: "Add Transaction"
+                background_color: get_color(app.theme, "primary_color")
+                color: get_color(app.theme, "button_text")
+                background_normal: ''
+                background_down: ''
+                canvas.before:
+                    Color:
+                        rgba: get_color(app.theme, "primary_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "primary_color")[:3]] + [1]
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(5)]
+                on_press: root.open_add_popup()
+
+# --- Commented out local TransactionItem Rule (using widgets/transaction_item.kv instead) ---
+# <TransactionItem>:
+#     # ... (definition previously here) ...
