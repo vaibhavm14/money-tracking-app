@@ -40,36 +40,12 @@ class MoneyTrackerApp(App):
 
     def get_currency_symbol(self):
         """
-        Determines a currency symbol to display.
-        This is a simplified approach. For robust multi-currency,
-        analysis and transaction handling would need to be more aware.
+        Returns the symbol for the base currency used in analysis.
+        Currently, analysis is done in INR.
         """
-        # Attempt to get transactions from the MainScreen if it's loaded
-        # This is a bit indirect; ideally, currency settings would be more global
-        # or passed explicitly where needed.
-        try:
-            # Accessing transactions directly from another screen's data is not ideal
-            # for strong encapsulation, but can work for simpler cases.
-            # A better approach might be a global app setting or service.
-            all_transactions = get_transactions() # Fetch all transactions from DB
-            if all_transactions:
-                # For simplicity, use the currency of the first transaction found.
-                # This assumes analysis primarily deals with one main currency or
-                # that the first transaction's currency is representative.
-                first_transaction_currency = all_transactions[0][3] # currency is at index 3
-                if first_transaction_currency == "INR":
-                    return "₹"
-                elif first_transaction_currency == "USD":
-                    return "$"
-                elif first_transaction_currency == "EUR":
-                    return "€"
-                elif first_transaction_currency == "GBP":
-                    return "£"
-                return first_transaction_currency # Fallback to the currency code
-        except Exception as e:
-            print(f"Error getting currency symbol from transactions: {e}")
-        
-        return "₹" # Default symbol if no transactions or error
+        # Since all analysis is converted to INR (as per utils/analysis.py),
+        # always return the INR symbol here for the analysis screen.
+        return "₹"
 
     def toggle_theme(self):
         self.theme = "dark" if self.theme == "light" else "light"

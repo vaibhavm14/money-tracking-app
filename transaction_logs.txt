@@ -7,3 +7,5 @@
 2025-05-15 16:57:17 - Debit: 300.0 INR - food
 2025-05-15 17:10:38 - Credit: 300.0 INR - money
 2025-05-15 17:11:05 - Credit: 50.0 USD - money
+2025-05-15 17:24:12 - Credit: 100.0 USD - mama give
+2025-05-15 17:25:38 - Credit: 100.0 JPY - mama
