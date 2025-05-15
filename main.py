@@ -1,31 +1,25 @@
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, FadeTransition # Added FadeTransition
+from kivy.uix.screenmanager import ScreenManager, FadeTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
-from kivy.core.window import Window # To potentially set background color
-from kivy.metrics import dp # If needed globally, though often used in kv
-from database import init_db # Assumes database.py is in the root
+from kivy.core.window import Window
+from kivy.metrics import dp
+from database import init_db, get_transactions # Import get_transactions
 import os
 
-# Import screens (make sure __init__.py exists in folders)
+# Import screens
 from screens.login_screen import LoginScreen
 from screens.main_screen import MainScreen
 from screens.analysis_screen import AnalysisScreen
-# Import widgets (needed for kv rules if not explicitly used in py)
+# Import widgets
 from widgets.transaction_item import TransactionItem
 from widgets.add_transaction_popup import AddTransactionPopup
-
-# Set a default window background color (optional)
-# Window.clearcolor = (1, 1, 1, 1) # Light theme default
 
 class MoneyTrackerApp(App):
     theme = StringProperty("light")  # Default theme: "light" or "dark"
 
     def build(self):
         init_db() # Initialize the database on startup
-        # Load the main kv file that sets up the ScreenManager
-        # Builder.load_file("moneytracker.kv") # Can be loaded automatically if named correctly
-        # Load other kv files for screens/widgets explicitly
         try:
             Builder.load_file("screens/login_screen.kv")
             Builder.load_file("screens/main_screen.kv")
@@ -35,59 +29,94 @@ class MoneyTrackerApp(App):
             print("KV files loaded successfully.")
         except Exception as e:
             print(f"Error loading KV files: {e}")
-            # Handle error appropriately, maybe exit or show an error popup
+            # Consider more robust error handling or app exit
 
-        sm = ScreenManager(transition=FadeTransition(duration=0.2)) # Use a transition
+        sm = ScreenManager(transition=FadeTransition(duration=0.2))
         sm.add_widget(LoginScreen(name='login'))
         sm.add_widget(MainScreen(name='main'))
         sm.add_widget(AnalysisScreen(name='analysis'))
-        # Set initial screen
         sm.current = 'login'
         return sm
+
+    def get_currency_symbol(self):
+        """
+        Determines a currency symbol to display.
+        This is a simplified approach. For robust multi-currency,
+        analysis and transaction handling would need to be more aware.
+        """
+        # Attempt to get transactions from the MainScreen if it's loaded
+        # This is a bit indirect; ideally, currency settings would be more global
+        # or passed explicitly where needed.
+        try:
+            # Accessing transactions directly from another screen's data is not ideal
+            # for strong encapsulation, but can work for simpler cases.
+            # A better approach might be a global app setting or service.
+            all_transactions = get_transactions() # Fetch all transactions from DB
+            if all_transactions:
+                # For simplicity, use the currency of the first transaction found.
+                # This assumes analysis primarily deals with one main currency or
+                # that the first transaction's currency is representative.
+                first_transaction_currency = all_transactions[0][3] # currency is at index 3
+                if first_transaction_currency == "INR":
+                    return "₹"
+                elif first_transaction_currency == "USD":
+                    return "$"
+                elif first_transaction_currency == "EUR":
+                    return "€"
+                elif first_transaction_currency == "GBP":
+                    return "£"
+                return first_transaction_currency # Fallback to the currency code
+        except Exception as e:
+            print(f"Error getting currency symbol from transactions: {e}")
+        
+        return "₹" # Default symbol if no transactions or error
 
     def toggle_theme(self):
         self.theme = "dark" if self.theme == "light" else "light"
         print(f"Theme toggled to: {self.theme}")
-        # Update window background if desired
+        # Optional: Update window background color based on theme
         # from utils.theme import get_color
         # Window.clearcolor = get_color(self.theme, "bg_color")
-        # Force redraw of widgets if kv bindings aren't sufficient (less common)
-        # self.root.canvas.ask_update()
+        # If widgets don't update automatically, you might need to trigger a redraw:
+        # if self.root:
+        #     for screen in self.root.screens:
+        #         # You might need a more specific way to trigger updates if simple property changes aren't enough
+        #         screen.canvas.ask_update()
 
 
 if __name__ == '__main__':
     # Create assets directory if it doesn't exist
-    if not os.path.exists("assets"):
+    assets_dir = "assets"
+    if not os.path.exists(assets_dir):
         try:
-            os.makedirs("assets")
-            print("Created assets directory.")
+            os.makedirs(assets_dir)
+            print(f"Created directory: {assets_dir}")
         except Exception as e:
-            print(f"Error creating assets directory: {e}")
+            print(f"Error creating directory {assets_dir}: {e}")
 
-
-    # Import CoreImage specifically for creation inside this block
+    # Placeholder icon creation (ensure Kivy core image is available)
     try:
         from kivy.core.image import Image as CoreImage
 
-        # Add placeholder icons if they don't exist (replace with real icons)
-        placeholder_icon = "assets/delete_icon.png"
-        if not os.path.exists(placeholder_icon):
-             # Create a simple red square as a placeholder
-             img = CoreImage.create(size=(64, 64), color=(1, 0, 0, 1)) # Use CoreImage.create
-             img.save(placeholder_icon)
-             print(f"Created placeholder icon: {placeholder_icon}")
+        icon_paths = {
+            "delete_icon.png": (1, 0, 0, 1),  # Red
+            "theme_icon.png": (0.5, 0.5, 0.5, 1) # Grey
+            # Add other icons here if needed
+        }
 
-        # Add theme icon placeholder
-        theme_icon = "assets/theme_icon.png"
-        if not os.path.exists(theme_icon):
-             img = CoreImage.create(size=(64, 64), color=(0.5, 0.5, 0.5, 1)) # Use CoreImage.create
-             img.save(theme_icon)
-             print(f"Created placeholder icon: {theme_icon}")
-
+        for icon_name, color in icon_paths.items():
+            icon_path = os.path.join(assets_dir, icon_name)
+            if not os.path.exists(icon_path):
+                try:
+                    img = CoreImage.create(size=(64, 64), color=color)
+                    img.save(icon_path)
+                    print(f"Created placeholder icon: {icon_path}")
+                except Exception as e:
+                    print(f"Error creating placeholder icon {icon_path}: {e}")
+    
     except ImportError:
-        print("Kivy core image not found, cannot create placeholder icons.")
-    except Exception as e:
-        print(f"Error creating placeholder icons: {e}")
-
+        print("Kivy CoreImage module not found. Cannot create placeholder icons.")
+    except Exception as e: # Catch any other unexpected errors during icon creation
+        print(f"An unexpected error occurred during placeholder icon setup: {e}")
 
     MoneyTrackerApp().run()

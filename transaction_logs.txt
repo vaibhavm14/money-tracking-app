@@ -4,3 +4,6 @@
 2025-04-24 23:46:47 - Credit: 300000.0 INR - lottery
 2025-04-25 10:26:38 - Credit: 500.0 INR - hello
 2025-05-15 16:38:53 - Credit: 100.0 INR - food
+2025-05-15 16:57:17 - Debit: 300.0 INR - food
+2025-05-15 17:10:38 - Credit: 300.0 INR - money
+2025-05-15 17:11:05 - Credit: 50.0 USD - money

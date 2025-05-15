@@ -1,28 +1,33 @@
-import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg') # Use non-interactive backend before importing pyplot
+import matplotlib.pyplot as plt
 import pandas as pd
 import os
-from database import get_transactions # Assumes database.py is in the root
-from datetime import datetime # Needed for timestamp
+from database import get_transactions # Assumes database.py is in the root/project directory
+# from datetime import datetime # Not strictly needed here anymore
 
-# Ensure matplotlib uses a non-interactive backend suitable for saving files
-import matplotlib
-matplotlib.use('Agg')
-
-PLOT_FILENAME = "assets/analysis_plot.png"
+# Ensure assets directory exists for the plot
+PLOT_DIR = "assets"
+PLOT_FILENAME = os.path.join(PLOT_DIR, "analysis_plot.png")
 
 def generate_analysis_plot():
-    """Generates and saves the income vs expense pie chart."""
+    """
+    Generates an income vs expense pie chart and calculates financial statistics.
+
+    Returns:
+        tuple: (plot_path, stats_dict)
+               plot_path (str): Path to the saved plot image, or None if failed.
+               stats_dict (dict): Dictionary of statistics, or None if no data or error.
+    """
     transactions = get_transactions()
     if not transactions:
         print("No transactions found for analysis.")
-        return None, None # No data
+        return None, None # No data to process
 
     try:
         df = pd.DataFrame(transactions, columns=['id', 'amount', 'description', 'currency', 'type', 'date'])
         df['amount'] = pd.to_numeric(df['amount'])
-        df['date'] = pd.to_datetime(df['date'])
+        # df['date'] = pd.to_datetime(df['date']) # Date conversion not strictly needed for this analysis
     except Exception as e:
         print(f"Error processing transactions into DataFrame: {e}")
         return None, None
@@ -32,8 +37,11 @@ def generate_analysis_plot():
 
     # Basic Stats
     total_transactions = len(df)
-    avg_credit = df[df['type'] == 'credit']['amount'].mean() if credits > 0 else 0
-    avg_debit = df[df['type'] == 'debit']['amount'].mean() if debits > 0 else 0
+    num_credits = len(df[df['type'] == 'credit'])
+    num_debits = len(df[df['type'] == 'debit'])
+    
+    avg_credit = df[df['type'] == 'credit']['amount'].mean() if num_credits > 0 else 0
+    avg_debit = df[df['type'] == 'debit']['amount'].mean() if num_debits > 0 else 0
     balance = credits - debits
 
     stats = {
@@ -46,41 +54,42 @@ def generate_analysis_plot():
     }
 
     # --- Plot Generation ---
-    plt.style.use('seaborn-v0_8-darkgrid') # Use a nice style
-    fig, ax = plt.subplots(figsize=(5, 5)) # Smaller figure
-
-    labels = ['Income', 'Expenses']
-    values = [credits, debits]
-    colors = ['#4CAF50', '#F44336'] # Green, Red
-
-    # Only plot if there are values
-    if credits > 0 or debits > 0:
-         wedges, texts, autotexts = ax.pie(
-             values, labels=labels, autopct='%1.1f%%', startangle=140,
-             colors=colors, textprops={'color':"w", 'weight':'bold'}, # White text on wedges
-             wedgeprops={'edgecolor': 'black'} # Add edge color
-         )
-         # Improve autopct text color for visibility
-         for autotext in autotexts:
-             autotext.set_color('white')
-    else:
-         ax.text(0.5, 0.5, "No data to display", ha='center', va='center', fontsize=12, color='black')
-
-
-    ax.set_title('Income vs Expenses', color='black', weight='bold') # Title color
-    fig.patch.set_facecolor('white') # White background for the figure itself
-
-    # Save in current directory for simplicity
-    plot_path = PLOT_FILENAME
-
     try:
-        os.makedirs(os.path.dirname(plot_path), exist_ok=True)
-        plt.savefig(plot_path, facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight', pad_inches=0.1)
+        plt.style.use('seaborn-v0_8-darkgrid')
+        fig, ax = plt.subplots(figsize=(5, 5)) # Keep figure size manageable
+
+        labels = ['Income', 'Expenses']
+        values = [credits, debits]
+        colors = ['#4CAF50', '#F44336'] # Green for income, Red for expenses
+
+        if credits > 0 or debits > 0:
+            wedges, texts, autotexts = ax.pie(
+                values, autopct='%1.1f%%', startangle=140,
+                colors=colors, textprops={'color': "w", 'weight': 'bold'},
+                wedgeprops={'edgecolor': 'black'}
+            )
+            # Set labels outside or ensure autotext is clearly visible
+            ax.legend(wedges, labels, title="Categories", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+            plt.setp(autotexts, size=10, weight="bold", color="white")
+        else:
+            ax.text(0.5, 0.5, "No data to display", ha='center', va='center', fontsize=12, color='black')
+
+        ax.set_title('Income vs Expenses', color='black', weight='bold')
+        fig.patch.set_facecolor('white') # Figure background
+
+        # Ensure assets directory exists
+        os.makedirs(os.path.dirname(PLOT_FILENAME), exist_ok=True)
+        
+        plt.savefig(PLOT_FILENAME, facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight', pad_inches=0.1)
+        plot_path = PLOT_FILENAME
         print(f"Analysis plot saved to {plot_path}")
     except Exception as e:
-        print(f"Error saving plot: {e}")
+        print(f"Error generating or saving plot: {e}")
         plot_path = None # Indicate failure
     finally:
-         plt.close(fig) # Close the figure to free memory
+        if 'fig' in locals(): # Ensure fig exists before trying to close
+            plt.close(fig) # Close the figure to free memory
 
+    # If plot generation failed but stats were calculated, still return stats.
+    # However, if the core data processing failed, stats would also be None.
     return plot_path, stats

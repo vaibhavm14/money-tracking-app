@@ -38,274 +38,247 @@
                 font_size: '20sp'
                 bold: True
                 color: get_color(app.theme, "text_color")
-                halign: 'center' # Center title
+                halign: 'center'
 
         ScrollView:
             bar_width: dp(10)
             bar_color: get_color(app.theme, "primary_color")[:3] + [0.7]
+            effect_cls: "ScrollEffect" # Smooth scrolling
             BoxLayout:
                 orientation: 'vertical'
                 size_hint_y: None
                 height: self.minimum_height
-                spacing: dp(15)
+                spacing: dp(20) # Increased spacing between major sections
                 padding: dp(10)
 
-                # Placeholder if plot is missing
+                # Status Label (Loading or No Data)
                 Label:
-                    text: "Generating analysis..." if not root.plot_source and not root.stats else ("No data for analysis" if not root.plot_source else "")
+                    id: status_label
+                    text: "Generating analysis..." if root.is_loading else ("No data available for analysis." if not root.plot_source and not root.stats else "")
+                    opacity: 1 if root.is_loading or (not root.is_loading and not root.plot_source and not root.stats) else 0
                     size_hint_y: None
-                    height: self.texture_size[1] if not root.plot_source else 0
+                    height: self.texture_size[1] if self.opacity == 1 else 0
                     color: get_color(app.theme, "text_color")[:3] + [0.7]
                     font_size: '16sp'
-                    padding_y: dp(50)
+                    padding_y: dp(50) if self.opacity == 1 else 0
+                    halign: 'center'
 
-                Image:
-                    id: analysis_image
-                    source: root.plot_source
-                    allow_stretch: True
-                    keep_ratio: True
+                # Image for the plot
+                BoxLayout: # Wrapper for plot to add a subtle card look if plot exists
                     size_hint_y: None
-                    # Set height dynamically based on aspect ratio if needed, or fixed
-                    height: dp(300) if root.plot_source else 0 # Hide if no source
+                    height: dp(310) if root.plot_source else 0 # Fixed height for the card
+                    opacity: 1 if root.plot_source else 0
+                    padding: dp(5)
+                    canvas.before:
+                        Color:
+                            rgba: get_color(app.theme, "secondary_color") if root.plot_source else [0,0,0,0]
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(8)]
+                    Image:
+                        id: analysis_image
+                        source: root.plot_source
+                        allow_stretch: True
+                        keep_ratio: True
+                        # size_hint_y: None # Handled by parent
+                        # height: dp(300) if root.plot_source else 0 # Handled by parent
 
-                BoxLayout: # Statistics Section Wrapper
+                # Statistics Section Wrapper
+                BoxLayout:
                     orientation: 'vertical'
                     size_hint_y: None
-                    height: self.minimum_height
-                    spacing: dp(5)
-                    # Only show stats if they exist
+                    height: self.minimum_height if root.stats else 0
                     opacity: 1 if root.stats else 0
                     disabled: not root.stats
+                    spacing: dp(10) # Spacing between title and list of stats
+                    # padding: [0, dp(10)] # Padding for the whole stats section
 
                     Label: # Statistics Title
-                        text: "Statistics"
-                        font_size: '18sp'
+                        text: "Key Statistics"
+                        font_size: '20sp' # Slightly larger title
                         bold: True
                         size_hint_y: None
                         height: self.texture_size[1]
                         color: get_color(app.theme, "text_color")
-                        padding_y: dp(10)
+                        padding_y: dp(10) # Spacing around title
 
-                    GridLayout: # Statistics Grid
-                        cols: 2
+                    # New BoxLayout for list-style statistics
+                    BoxLayout:
+                        orientation: 'vertical'
                         size_hint_y: None
                         height: self.minimum_height
-                        spacing: dp(10)
+                        spacing: dp(8) # Spacing between stat "cards"
 
-                        # Dynamically populated from root.stats
-                        Label:
-                            text: "Total Transactions:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Total Transactions", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: "Total Income:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Total Income", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: (0.1, 0.7, 0.1, 1) # Green
-                        Label:
-                            text: "Total Expenses:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Total Expenses", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: (0.9, 0.1, 0.1, 1) # Red
-                        Label:
-                            text: "Current Balance:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Current Balance", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            bold: True
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: "Avg Income Tx:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]
-                        Label:
-                            text: str(root.stats.get("Average Income Transaction", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]
-                        Label:
-                            text: "Avg Expense Tx:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]
-                        Label:
-                            text: str(root.stats.get("Average Expense Transaction", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]#:import get_color utils.theme.get_color
-#:import dp kivy.metrics.dp
+                        # Card for Total Transactions
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(45) # Slightly taller cards
+                            padding: [dp(12), dp(5)]
+                            canvas.before:
+                                Color:
+                                    rgba: get_color(app.theme, "secondary_color")
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [dp(4)]
+                            Label:
+                                text: "Total Transactions:"
+                                halign: 'left'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")
+                                font_size: '15sp'
+                            Label:
+                                text: str(root.stats.get("Total Transactions", "N/A")) if root.stats else "N/A"
+                                halign: 'right'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")
+                                font_size: '15sp'
+                                bold: True
 
-<AnalysisScreen>:
-    canvas.before:
-        Color:
-            rgba: get_color(app.theme, "bg_color")
-        Rectangle:
-            pos: self.pos
-            size: self.size
+                        # Card for Total Income
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(45)
+                            padding: [dp(12), dp(5)]
+                            canvas.before:
+                                Color:
+                                    rgba: get_color(app.theme, "secondary_color")
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [dp(4)]
+                            Label:
+                                text: "Total Income:"
+                                halign: 'left'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")
+                                font_size: '15sp'
+                            Label:
+                                text: (str(root.stats.get("Total Income", "N/A")) + " " + app.get_currency_symbol()) if root.stats else "N/A"
+                                halign: 'right'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: (0.1, 0.7, 0.1, 1) # Green
+                                font_size: '15sp'
+                                bold: True
 
-    BoxLayout:
-        orientation: 'vertical'
-        padding: dp(10)
-        spacing: dp(10)
+                        # Card for Total Expenses
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(45)
+                            padding: [dp(12), dp(5)]
+                            canvas.before:
+                                Color:
+                                    rgba: get_color(app.theme, "secondary_color")
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [dp(4)]
+                            Label:
+                                text: "Total Expenses:"
+                                halign: 'left'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")
+                                font_size: '15sp'
+                            Label:
+                                text: (str(root.stats.get("Total Expenses", "N/A")) + " " + app.get_currency_symbol()) if root.stats else "N/A"
+                                halign: 'right'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: (0.9, 0.1, 0.1, 1) # Red
+                                font_size: '15sp'
+                                bold: True
 
-        BoxLayout: # Header with Back button
-            size_hint_y: None
-            height: dp(50)
-            Button:
-                text: '< Back'
-                size_hint_x: None
-                width: dp(80)
-                background_color: get_color(app.theme, "secondary_color")
-                color: get_color(app.theme, "text_color")
-                background_normal: ''
-                background_down: ''
-                canvas.before:
-                    Color:
-                        rgba: get_color(app.theme, "secondary_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "secondary_color")[:3]] + [1]
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [dp(5)]
-                on_press: root.go_back()
-            Label:
-                text: "Financial Analysis"
-                font_size: '20sp'
-                bold: True
-                color: get_color(app.theme, "text_color")
-                halign: 'center' # Center title
+                        # Card for Current Balance (Highlighted)
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(55) # Taller for emphasis
+                            padding: [dp(12), dp(5)]
+                            canvas.before:
+                                Color: # Slightly different background or border for emphasis
+                                    rgba: get_color(app.theme, "primary_color")[:3] + [0.2] # Faded primary color
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [dp(6)]
+                                # Optional: Add a border
+                                # Line:
+                                #     rounded_rectangle: (self.x, self.y, self.width, self.height, dp(6))
+                                #     width: dp(1.2)
+                                #     color: get_color(app.theme, "primary_color")
+                            Label:
+                                text: "Current Balance:"
+                                halign: 'left'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")
+                                font_size: '17sp' # Larger font
+                            Label:
+                                text: (str(root.stats.get("Current Balance", "N/A")) + " " + app.get_currency_symbol()) if root.stats else "N/A"
+                                halign: 'right'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                bold: True
+                                color: get_color(app.theme, "primary_color") # Use primary color for text
+                                font_size: '17sp' # Larger font
 
-        ScrollView:
-            bar_width: dp(10)
-            bar_color: get_color(app.theme, "primary_color")[:3] + [0.7]
-            BoxLayout:
-                orientation: 'vertical'
-                size_hint_y: None
-                height: self.minimum_height
-                spacing: dp(15)
-                padding: dp(10)
+                        # Card for Average Income Transaction
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(45)
+                            padding: [dp(12), dp(5)]
+                            canvas.before:
+                                Color:
+                                    rgba: get_color(app.theme, "secondary_color")
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [dp(4)]
+                            Label:
+                                text: "Avg Income Tx:"
+                                halign: 'left'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")[:3] + [0.8]
+                                font_size: '14sp'
+                            Label:
+                                text: (str(root.stats.get("Average Income Transaction", "N/A")) + " " + app.get_currency_symbol()) if root.stats else "N/A"
+                                halign: 'right'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")[:3] + [0.8]
+                                font_size: '14sp'
+                                bold: True
 
-                # Placeholder if plot is missing
-                Label:
-                    text: "Generating analysis..." if not root.plot_source and not root.stats else ("No data for analysis" if not root.plot_source else "")
-                    size_hint_y: None
-                    height: self.texture_size[1] if not root.plot_source else 0
-                    color: get_color(app.theme, "text_color")[:3] + [0.7]
-                    font_size: '16sp'
-                    padding_y: dp(50)
-
-                Image:
-                    id: analysis_image
-                    source: root.plot_source
-                    allow_stretch: True
-                    keep_ratio: True
-                    size_hint_y: None
-                    # Set height dynamically based on aspect ratio if needed, or fixed
-                    height: dp(300) if root.plot_source else 0 # Hide if no source
-
-                BoxLayout: # Statistics Section Wrapper
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: self.minimum_height
-                    spacing: dp(5)
-                    # Only show stats if they exist
-                    opacity: 1 if root.stats else 0
-                    disabled: not root.stats
-
-                    Label: # Statistics Title
-                        text: "Statistics"
-                        font_size: '18sp'
-                        bold: True
-                        size_hint_y: None
-                        height: self.texture_size[1]
-                        color: get_color(app.theme, "text_color")
-                        padding_y: dp(10)
-
-                    GridLayout: # Statistics Grid
-                        cols: 2
-                        size_hint_y: None
-                        height: self.minimum_height
-                        spacing: dp(10)
-
-                        # Dynamically populated from root.stats
-                        Label:
-                            text: "Total Transactions:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Total Transactions", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: "Total Income:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Total Income", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: (0.1, 0.7, 0.1, 1) # Green
-                        Label:
-                            text: "Total Expenses:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Total Expenses", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: (0.9, 0.1, 0.1, 1) # Red
-                        Label:
-                            text: "Current Balance:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: str(root.stats.get("Current Balance", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            bold: True
-                            color: get_color(app.theme, "text_color")
-                        Label:
-                            text: "Avg Income Tx:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]
-                        Label:
-                            text: str(root.stats.get("Average Income Transaction", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]
-                        Label:
-                            text: "Avg Expense Tx:"
-                            halign: 'left'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]
-                        Label:
-                            text: str(root.stats.get("Average Expense Transaction", "N/A"))
-                            halign: 'right'
-                            text_size: self.width, None
-                            color: get_color(app.theme, "text_color")[:3] + [0.7]
+                        # Card for Average Expense Transaction
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(45)
+                            padding: [dp(12), dp(5)]
+                            canvas.before:
+                                Color:
+                                    rgba: get_color(app.theme, "secondary_color")
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [dp(4)]
+                            Label:
+                                text: "Avg Expense Tx:"
+                                halign: 'left'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")[:3] + [0.8]
+                                font_size: '14sp'
+                            Label:
+                                text: (str(root.stats.get("Average Expense Transaction", "N/A")) + " " + app.get_currency_symbol()) if root.stats else "N/A"
+                                halign: 'right'
+                                valign: 'middle'
+                                text_size: self.width, None
+                                color: get_color(app.theme, "text_color")[:3] + [0.8]
+                                font_size: '14sp'
+                                bold: True
