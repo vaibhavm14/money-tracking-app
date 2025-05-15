@@ -6,9 +6,10 @@ class TransactionItem(BoxLayout):
     amount = StringProperty()
     description = StringProperty()
     currency = StringProperty()
-    transaction_type = StringProperty() # Expecting "Credit" or "Debit" (capitalized)
+    transaction_type = StringProperty()
     date = StringProperty()
-    delete_callback = ObjectProperty(None) # Callback function
+    tag = StringProperty("Uncategorized") # New property for tag
+    delete_callback = ObjectProperty(None)
 
     def trigger_delete(self):
         if self.delete_callback:

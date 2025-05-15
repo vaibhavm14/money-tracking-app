@@ -9,3 +9,10 @@
 2025-05-15 17:11:05 - Credit: 50.0 USD - money
 2025-05-15 17:24:12 - Credit: 100.0 USD - mama give
 2025-05-15 17:25:38 - Credit: 100.0 JPY - mama
+2025-05-15 17:34:34 - Credit: 500.0 INR - money [Tag: food]
+2025-05-15 17:36:15 - Credit: 500.0 USD - food [Tag: food]
+2025-05-15 17:36:38 - Debit: 300.0 INR - mony [Tag: health]
+2025-05-15 17:37:09 - Credit: 1000.0 USD - party [Tag: health]
+2025-05-15 17:37:42 - Debit: 1000.0 INR - health [Tag: food]
+2025-05-15 17:37:59 - Credit: 300.0 USD - health [Tag: Uncategorized]
+2025-05-15 17:47:19 - Credit: 100.0 USD - money [Tag: food]

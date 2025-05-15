@@ -41,8 +41,9 @@ def generate_analysis_plot():
         return None, None
 
     try:
-        # Columns: id, amount, description, currency, type, date
-        df = pd.DataFrame(transactions, columns=['id', 'original_amount', 'description', 'currency', 'type', 'date'])
+        # Columns from DB: id, amount, description, currency, transaction_type, date, tag
+        # Ensure the columns list matches the data structure from get_transactions()
+        df = pd.DataFrame(transactions, columns=['id', 'original_amount', 'description', 'currency', 'type', 'date', 'tag'])
         df['original_amount'] = pd.to_numeric(df['original_amount'])
 
         # Convert amounts to base currency (INR)

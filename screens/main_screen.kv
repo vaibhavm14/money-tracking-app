@@ -24,53 +24,75 @@
                 text: "Transactions"
                 font_size: '24sp'
                 bold: True
-                size_hint_x: 0.5
+                size_hint_x: 0.4 # Adjusted
                 halign: 'left'
                 valign: 'middle'
                 text_size: self.width, None
                 color: get_color(app.theme, "text_color")
             Label:
-                text: f"Balance: {root.total_balance:.2f}" # Format balance
-                font_size: '16sp'
-                size_hint_x: 0.35 # Adjusted size
+                text: f"Balance: {root.total_balance:.2f} {app.get_currency_symbol() if root.total_balance != 0 else ''}" # Added currency symbol
+                font_size: '14sp' # Slightly smaller
+                size_hint_x: 0.45 # Adjusted
                 halign: 'right'
                 valign: 'middle'
                 text_size: self.width, None
                 color: get_color(app.theme, "text_color")
-                padding: [dp(0), dp(10)] # Use padding instead [padding_x, padding_y]
+                padding_x: dp(5)
             Button:
-                size_hint_x: None
+                size_hint_x: None # Adjusted to 0.15
                 width: dp(40)
-                background_color: [0,0,0,0] # Transparent
+                background_color: [0,0,0,0]
                 background_normal: ""
                 on_press: app.toggle_theme()
                 Image:
-                    source: "assets/theme_icon.png" # Add a theme toggle icon (e.g., sun/moon)
+                    source: "assets/theme_icon.png"
                     center_x: self.parent.center_x
                     center_y: self.parent.center_y
                     size_hint: None, None
                     size: dp(24), dp(24)
                     color: get_color(app.theme, "text_color")
 
-        # --- Restored RecycleView ---
+        # Filter Bar
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(10)
+            Label:
+                text: "Filter by Tag:"
+                size_hint_x: 0.3
+                color: get_color(app.theme, "text_color")
+                font_size: '14sp'
+                halign: 'left'
+                valign: 'middle'
+            Spinner:
+                id: tag_filter_spinner
+                text: root.current_tag_filter # Bind to property
+                values: root.available_tags # Bind to property
+                size_hint_x: 0.7
+                height: dp(40)
+                background_color: get_color(app.theme, "secondary_color")
+                color: get_color(app.theme, "text_color") if self.text != "All Tags" else get_color(app.theme, "text_color")[:3] + [0.7]
+                option_cls: 'SpinnerOption'
+                on_text: root.on_tag_filter_change(self.text)
+
+
         RecycleView:
             id: rv
-            viewclass: 'TransactionItem' # Use the custom widget
-            data: root.transactions_data # Bind to the ListProperty
+            viewclass: 'TransactionItem'
+            data: root.transactions_data
             scroll_type: ['bars', 'content']
-            scroll_wheel_distance: dp(114)
+            scroll_wheel_distance: dp(114) # Height of TransactionItem + spacing
             bar_width: dp(10)
             bar_color: get_color(app.theme, "primary_color")[:3] + [0.7]
             RecycleBoxLayout:
-                default_size: None, dp(60) # Height of TransactionItem
+                default_size: None, dp(75) # Updated height of TransactionItem
                 default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height
                 orientation: 'vertical'
-                spacing: dp(5) # Spacing between items
-                padding: [dp(5), dp(5)] # Padding around the list items
+                spacing: dp(5)
+                padding: [dp(5), dp(5)]
 
-        # --- Restored Footer Buttons ---
         BoxLayout:
             size_hint_y: None
             height: dp(60)
@@ -105,6 +127,7 @@
                         radius: [dp(5)]
                 on_press: root.open_add_popup()
 
-# --- Commented out local TransactionItem Rule (using widgets/transaction_item.kv instead) ---
-# <TransactionItem>:
-#     # ... (definition previously here) ...
+<SpinnerOption>: # Ensure this is defined if used by Spinners
+    background_color: get_color(app.theme, "secondary_color")
+    color: get_color(app.theme, "text_color")
+    height: dp(40)
