@@ -16,3 +16,4 @@
 2025-05-15 17:37:42 - Debit: 1000.0 INR - health [Tag: food]
 2025-05-15 17:37:59 - Credit: 300.0 USD - health [Tag: Uncategorized]
 2025-05-15 17:47:19 - Credit: 100.0 USD - money [Tag: food]
+2025-05-15 20:20:50 - Debit: 500.0 INR - momos [Tag: Food]
