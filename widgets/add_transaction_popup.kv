@@ -1,86 +1,195 @@
 #:import get_color utils.theme.get_color
 #:import dp kivy.metrics.dp
+#:import datetime datetime
 
 <AddTransactionPopup>:
-    size_hint: 0.9, 0.8 # Increased height slightly for the new field
+    size_hint: 0.9, 0.8
     auto_dismiss: False
     background_color: [0,0,0,0]
 
     BoxLayout:
         orientation: 'vertical'
-        padding: dp(20)
-        spacing: dp(15)
+        padding: dp(15)
         canvas.before:
             Color:
                 rgba: get_color(app.theme, "bg_color")
             RoundedRectangle:
                 pos: self.pos
                 size: self.size
-                radius: [dp(10)]
+                radius: [dp(12)]
 
-        Label:
-            text: "Add New Transaction"
-            font_size: '20sp'
+        # Header with title and close button
+        BoxLayout:
             size_hint_y: None
-            height: self.texture_size[1] + dp(10)
-            color: get_color(app.theme, "text_color")
-            bold: True
-            padding_y: dp(10)
-
-        TextInput:
-            id: amount_input
-            hint_text: "Amount"
-            multiline: False
-            input_filter: "float"
+            height: dp(50)
+            
+            Label:
+                text: "Add Transaction"
+                font_size: '20sp'
+                color: get_color(app.theme, "text_color")
+                bold: True
+                size_hint_x: 0.8
+                
+            Button:
+                text: "×"
+                font_size: '24sp'
+                size_hint_x: None
+                width: dp(40)
+                background_color: [0,0,0,0]
+                color: get_color(app.theme, "text_color")
+                on_press: root.dismiss()
+        
+        # Transaction Type Selector (Only Income and Expense)
+        BoxLayout:
             size_hint_y: None
-            height: dp(40)
-            background_color: get_color(app.theme, "secondary_color")
-            foreground_color: get_color(app.theme, "text_color")
-            cursor_color: get_color(app.theme, "primary_color")
-            padding: [dp(10), (self.height - self.line_height)/2]
-
-        TextInput:
-            id: description_input
-            hint_text: "Description"
-            multiline: False
-            size_hint_y: None
-            height: dp(40)
-            background_color: get_color(app.theme, "secondary_color")
-            foreground_color: get_color(app.theme, "text_color")
-            cursor_color: get_color(app.theme, "primary_color")
-            padding: [dp(10), (self.height - self.line_height)/2]
-
-        TextInput: # New field for Tag
-            id: tag_input
-            hint_text: "Tag (e.g., Food, Shopping, Salary)"
-            multiline: False
-            size_hint_y: None
-            height: dp(40)
-            background_color: get_color(app.theme, "secondary_color")
-            foreground_color: get_color(app.theme, "text_color")
-            cursor_color: get_color(app.theme, "primary_color")
-            padding: [dp(10), (self.height - self.line_height)/2]
-
-        Spinner:
-            id: currency_spinner
-            text: "Select Currency"
-            values: ["USD", "INR", "EUR", "GBP", "JPY"] # Consider making this dynamic or configurable
-            size_hint_y: None
-            height: dp(40)
-            background_color: get_color(app.theme, "secondary_color")
-            color: get_color(app.theme, "text_color") if self.text != "Select Currency" else get_color(app.theme, "text_color")[:3] + [0.5]
-            option_cls: 'SpinnerOption'
-
+            height: dp(45)
+            padding: [dp(5), dp(5)]
+            spacing: dp(10)
+            
+            ToggleButton:
+                id: income_button
+                text: "Income"
+                group: "transaction_type"
+                background_color: [0,0,0,0]
+                on_press: type_spinner.text = "Credit"
+                canvas.before:
+                    Color:
+                        rgba: [0.2, 0.8, 0.2, 1] if self.state == "down" else [0.9, 0.9, 0.9, 1]
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(5)]
+            
+            ToggleButton:
+                id: expense_button
+                text: "Expense"
+                group: "transaction_type"
+                state: "down"  # Default selected
+                background_color: [0,0,0,0]
+                on_press: type_spinner.text = "Debit"
+                canvas.before:
+                    Color:
+                        rgba: [0.9, 0.3, 0.3, 1] if self.state == "down" else [0.9, 0.9, 0.9, 1]
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(5)]
+        
+        # Hidden Type Spinner
         Spinner:
             id: type_spinner
-            text: "Select Type"
+            text: "Debit"
             values: ["Credit", "Debit"]
+            opacity: 0
             size_hint_y: None
-            height: dp(40)
-            background_color: get_color(app.theme, "secondary_color")
-            color: get_color(app.theme, "text_color") if self.text != "Select Type" else get_color(app.theme, "text_color")[:3] + [0.5]
-            option_cls: 'SpinnerOption'
+            height: 0
 
+        # Form Fields in a simple layout
+        GridLayout:
+            cols: 1
+            spacing: dp(15)
+            padding: [0, dp(15), 0, dp(5)]
+            
+            # Amount Field
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(70)
+                spacing: dp(5)
+                
+                Label:
+                    text: "Amount"
+                    size_hint_y: None
+                    height: dp(20)
+                    color: get_color(app.theme, "text_color")
+                    halign: 'left'
+                    text_size: self.width, None
+                    font_size: '16sp'
+                
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(45)
+                    
+                    TextInput:
+                        id: amount_input
+                        hint_text: "0.00"
+                        multiline: False
+                        input_filter: "float"
+                        font_size: '16sp'
+                        size_hint_x: 0.8
+                        background_color: [0.95, 0.95, 0.95, 1] if app.theme == "light" else [0.2, 0.2, 0.2, 1]
+                        foreground_color: get_color(app.theme, "text_color")
+                        padding: [dp(10), (self.height - self.line_height)/2]
+                    
+                    Spinner:
+                        id: currency_spinner
+                        text: "INR"
+                        values: ["USD", "INR", "EUR", "GBP", "JPY"]
+                        size_hint_x: 0.2
+                        background_normal: ''
+                        background_color: [0.3, 0.3, 0.3, 1] if app.theme == "dark" else [0.8, 0.8, 0.8, 1]
+                        color: get_color(app.theme, "text_color")
+                        font_size: '16sp'
+            
+            # Category Field
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(70)
+                spacing: dp(5)
+                
+                Label:
+                    text: "Category"
+                    size_hint_y: None
+                    height: dp(20)
+                    color: get_color(app.theme, "text_color")
+                    halign: 'left'
+                    text_size: self.width, None
+                    font_size: '16sp'
+                
+                TextInput:
+                    id: tag_input
+                    hint_text: "Food, Shopping, Salary..."
+                    multiline: False
+                    font_size: '16sp'
+                    background_color: [0.95, 0.95, 0.95, 1] if app.theme == "light" else [0.2, 0.2, 0.2, 1]
+                    foreground_color: get_color(app.theme, "text_color")
+                    padding: [dp(10), (self.height - self.line_height)/2]
+                    size_hint_y: None
+                    height: dp(45)
+            
+            # Note Field
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(70)
+                spacing: dp(5)
+                
+                Label:
+                    text: "Note"
+                    size_hint_y: None
+                    height: dp(20)
+                    color: get_color(app.theme, "text_color")
+                    halign: 'left'
+                    text_size: self.width, None
+                    font_size: '16sp'
+                
+                TextInput:
+                    id: description_input
+                    hint_text: "Enter description..."
+                    multiline: False
+                    font_size: '16sp'
+                    background_color: [0.95, 0.95, 0.95, 1] if app.theme == "light" else [0.2, 0.2, 0.2, 1]
+                    foreground_color: get_color(app.theme, "text_color")
+                    padding: [dp(10), (self.height - self.line_height)/2]
+                    size_hint_y: None
+                    height: dp(45)
+
+        Widget:
+            # Spacer
+            size_hint_y: 1
+        
+        # Error message
         Label:
             id: error_label
             text: root.error_message
@@ -88,41 +197,15 @@
             size_hint_y: None
             height: self.texture_size[1] if root.error_message else 0
             padding_y: dp(5)
-
-        BoxLayout: # Buttons layout
+        
+        # Save Button - Blue button like in your reference
+        Button:
+            text: "SAVE"
             size_hint_y: None
             height: dp(50)
-            spacing: dp(10)
-            Button:
-                text: "Add"
-                background_color: get_color(app.theme, "primary_color")
-                color: get_color(app.theme, "button_text")
-                background_normal: ''
-                background_down: ''
-                canvas.before:
-                    Color:
-                        rgba: get_color(app.theme, "primary_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "primary_color")[:3]] + [1]
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [dp(5)]
-                on_press: root.submit_transaction()
-            Button:
-                text: "Cancel"
-                background_color: get_color(app.theme, "secondary_color")
-                color: get_color(app.theme, "text_color")
-                background_normal: ''
-                background_down: ''
-                canvas.before:
-                    Color:
-                        rgba: get_color(app.theme, "secondary_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "secondary_color")[:3]] + [1]
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [dp(5)]
-                on_press: root.dismiss()
-
-<SpinnerOption>:
-    background_color: get_color(app.theme, "secondary_color")
-    color: get_color(app.theme, "text_color")
-    height: dp(40)
+            background_normal: ''
+            background_color: [0.3, 0.6, 0.9, 1]
+            color: [1, 1, 1, 1] 
+            font_size: '18sp'
+            bold: True
+            on_press: root.submit_transaction()

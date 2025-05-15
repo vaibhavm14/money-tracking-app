@@ -12,83 +12,143 @@
 
     BoxLayout:
         orientation: 'vertical'
-        padding: dp(15)
+        padding: dp(12)
         spacing: dp(15)
 
-        # Header: Title, Balance, Theme Toggle
+        # Enhanced Header: Title, Balance, Theme Toggle
         BoxLayout:
             size_hint_y: None
             height: dp(70)
-            padding: [dp(10), 0]
+            padding: [dp(5), dp(10)]
             spacing: dp(10)
-            Label:
-                text: "Transactions"
-                font_size: '28sp'
-                bold: True
-                size_hint_x: 0.5
-                halign: 'left'
-                valign: 'middle'
-                text_size: self.width, None
-                color: get_color(app.theme, "text_color")
-            Label:
-                text: f"Balance: {root.total_balance:.2f} {app.get_currency_symbol() if root.total_balance != 0 else ''}"
-                font_size: '16sp'
-                size_hint_x: 0.4
-                halign: 'right'
-                valign: 'middle'
-                text_size: self.width, None
-                color: get_color(app.theme, "text_color")
-                padding_x: dp(5)
+            canvas.before:
+                Color:
+                    rgba: get_color(app.theme, "primary_color")[:3] + [0.1]
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(15)]
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.6
+                padding: [dp(10), 0]
+                spacing: dp(2)
+                
+                Label:
+                    text: "Money Tracker"
+                    font_size: '22sp'
+                    bold: True
+                    halign: 'left'
+                    valign: 'bottom'
+                    text_size: self.width, None
+                    color: get_color(app.theme, "text_color")
+                    
+                Label:
+                    text: f"Balance: {root.total_balance:.2f} {app.get_currency_symbol()}"
+                    font_size: '16sp'
+                    halign: 'left'
+                    valign: 'top'
+                    text_size: self.width, None
+                    color: get_color(app.theme, "primary_color") if root.total_balance >= 0 else get_color(app.theme, "error_color")
+            
+            Widget:
+                size_hint_x: 0.25
+                
             Button:
                 size_hint_x: None
                 width: dp(50)
-                background_color: [0, 0, 0, 0]
+                background_color: [0,0,0,0]
                 background_normal: ""
                 on_press: app.toggle_theme()
+                canvas.before:
+                    Color:
+                        rgba: get_color(app.theme, "secondary_color")
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(25)]
                 Image:
                     source: "assets/theme_icon.png"
                     center_x: self.parent.center_x
                     center_y: self.parent.center_y
                     size_hint: None, None
-                    size: dp(30), dp(30)
-                    allow_stretch: True
-                    keep_ratio: True
+                    size: dp(24), dp(24)
                     color: get_color(app.theme, "text_color")
 
-        # Filter Bar
+        # Enhanced Filter Bar
         BoxLayout:
             size_hint_y: None
             height: dp(50)
             spacing: dp(10)
+            padding: [dp(5), 0]
+            
             Label:
                 text: "Filter by Tag:"
                 size_hint_x: 0.3
                 color: get_color(app.theme, "text_color")
-                font_size: '16sp'
+                font_size: '15sp'
+                bold: True
                 halign: 'left'
                 valign: 'middle'
+                text_size: self.width, None
+                
             Spinner:
                 id: tag_filter_spinner
                 text: root.current_tag_filter
                 values: root.available_tags
                 size_hint_x: 0.7
-                height: dp(50)
-                background_color: get_color(app.theme, "secondary_color")
-                color: get_color(app.theme, "text_color") if self.text != "All Tags" else get_color(app.theme, "text_color")[:3] + [0.7]
+                height: dp(45)
+                background_normal: ''
+                background_color: [0,0,0,0]
+                color: get_color(app.theme, "text_color")
                 option_cls: 'SpinnerOption'
                 on_text: root.on_tag_filter_change(self.text)
+                canvas.before:
+                    Color:
+                        rgba: get_color(app.theme, "secondary_color")
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(10)]
 
-        # Transaction List
+        # Transactions Label
+        BoxLayout:
+            size_hint_y: None
+            height: dp(30)
+            padding: [dp(10), 0]
+            
+            Label:
+                text: "Transactions"
+                font_size: '16sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.width, None
+                color: get_color(app.theme, "text_color")
+
+        # Enhanced Transaction List with modern styling
         RecycleView:
             id: rv
             viewclass: 'TransactionItem'
             data: root.transactions_data
             scroll_type: ['bars', 'content']
-            scroll_wheel_distance: dp(120)
-            bar_width: dp(10)
-            bar_color: get_color(app.theme, "primary_color")[:3] + [0.7]
+            scroll_wheel_distance: dp(114)
+            bar_width: dp(5)
+            bar_color: get_color(app.theme, "primary_color")[:3] + [0.5]
+            bar_inactive_color: get_color(app.theme, "primary_color")[:3] + [0.2]
+            effect_cls: "ScrollEffect"  # Smooth scrolling effect
+            
+            canvas.before:
+                Color:
+                    rgba: get_color(app.theme, "secondary_color")[:3] + [0.3]
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(15)]
+                    
             RecycleBoxLayout:
-                default_size: None, dp(90)
+                default_size: None, dp(75)
                 default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height
@@ -96,44 +156,46 @@
                 spacing: dp(10)
                 padding: [dp(10), dp(10)]
 
-        # Footer Buttons
+        # Enhanced Action Button Bar
         BoxLayout:
             size_hint_y: None
-            height: dp(70)
+            height: dp(60)
+            padding: [dp(5), dp(5)]
             spacing: dp(15)
-            padding: [dp(10), dp(10)]
+            
             Button:
                 text: "Analysis"
-                font_size: '18sp'
-                background_color: get_color(app.theme, "accent_color")
+                font_size: '16sp'
+                bold: True
+                background_color: [0,0,0,0]
                 color: get_color(app.theme, "button_text")
-                background_normal: ''
-                background_down: ''
+                on_press: root.go_to_analysis()
                 canvas.before:
                     Color:
-                        rgba: get_color(app.theme, "accent_color") if self.state == 'normal' else [c * 0.8 for c in get_color(app.theme, "accent_color")[:3]] + [1]
+                        rgba: get_color(app.theme, "accent_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "accent_color")[:3]] + [1]
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
-                        radius: [dp(10)]
-                on_press: root.go_to_analysis()
+                        radius: [dp(15)]
+                    
             Button:
                 text: "Add Transaction"
-                font_size: '18sp'
-                background_color: get_color(app.theme, "primary_color")
+                font_size: '16sp'
+                bold: True
+                background_color: [0,0,0,0]
                 color: get_color(app.theme, "button_text")
-                background_normal: ''
-                background_down: ''
+                on_press: root.open_add_popup()
                 canvas.before:
                     Color:
-                        rgba: get_color(app.theme, "primary_color") if self.state == 'normal' else [c * 0.8 for c in get_color(app.theme, "primary_color")[:3]] + [1]
+                        rgba: get_color(app.theme, "primary_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "primary_color")[:3]] + [1]
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
-                        radius: [dp(10)]
-                on_press: root.open_add_popup()
+                        radius: [dp(15)]
 
 <SpinnerOption>:
     background_color: get_color(app.theme, "secondary_color")
     color: get_color(app.theme, "text_color")
-    height: dp(50)
+    height: dp(45)
+    font_size: '15sp'
+    background_normal: ''

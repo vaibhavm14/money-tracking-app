@@ -18,19 +18,9 @@ class AddTransactionPopup(ModalView):
             self.error_message = "Amount is required."
             return
         if not description:
-            self.error_message = "Description is required."
-            return
-        if currency == 'Select Currency':
-            self.error_message = "Please select a currency."
-            return
-        if transaction_type == 'Select Type':
-            self.error_message = "Please select a transaction type."
+            self.error_message = "Note is required."
             return
         
-        # Tag is optional, but if provided, it's good. If not, it will default in DB.
-        # You can add validation for tag length or characters if needed.
-        # For now, we'll allow empty tag which will become 'Uncategorized'.
-
         try:
             amount = float(amount_str)
             if amount <= 0:
@@ -48,6 +38,6 @@ class AddTransactionPopup(ModalView):
         self.error_message = "" # Clear error on success
 
         if self.add_callback:
-            # Pass data to the callback provided by MainScreen, including the tag
+            # Pass data to the callback provided by MainScreen
             self.add_callback(amount, description, currency, transaction_type.lower(), date, tag)
         self.dismiss() # Close the popup

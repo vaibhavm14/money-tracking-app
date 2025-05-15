@@ -15,6 +15,7 @@ from screens.analysis_screen import AnalysisScreen
 from widgets.transaction_item import TransactionItem
 from widgets.add_transaction_popup import AddTransactionPopup
 
+
 class MoneyTrackerApp(App):
     theme = StringProperty("light")  # Default theme: "light" or "dark"
 
@@ -76,8 +77,11 @@ if __name__ == '__main__':
 
         icon_paths = {
             "delete_icon.png": (1, 0, 0, 1),  # Red
-            "theme_icon.png": (0.5, 0.5, 0.5, 1) # Grey
-            # Add other icons here if needed
+            "theme_icon.png": (0.5, 0.5, 0.5, 1),  # Grey
+            "back_icon.png": (0.3, 0.3, 0.3, 1),  # Dark grey
+            "back_icon_dark.png": (0.8, 0.8, 0.8, 1),  # Light grey
+            "app_icon.png": (0.2, 0.6, 0.8, 1),  # App icon - blue
+            "app_icon_dark.png": (0.3, 0.7, 0.9, 1)  # App icon dark - lighter blue
         }
 
         for icon_name, color in icon_paths.items():
