@@ -26,3 +26,8 @@
 2025-05-15 22:32:26 - Debit: 100.0 INR - momos [Tag: food]
 2025-05-15 22:32:43 - Debit: 10.0 USD - medicen [Tag: health]
 2025-05-15 22:33:08 - Credit: 100000.0 INR - job [Tag: salary]
+2025-05-16 09:55:29 - Debit: 1000.0 INR - momos [Tag: food]
+2025-05-16 09:55:31 - Debit: 1000.0 INR - momos [Tag: food]
+2025-05-16 11:31:57 - Credit: 3000.0 INR - dad [Tag: pocket money]
+2025-05-16 11:32:14 - Debit: 500.0 INR - crosin [Tag: medicen]
+2025-05-16 11:32:52 - Credit: 500.0 INR - money [Tag: moeny]
