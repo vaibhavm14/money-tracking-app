@@ -31,3 +31,5 @@
 2025-05-16 11:31:57 - Credit: 3000.0 INR - dad [Tag: pocket money]
 2025-05-16 11:32:14 - Debit: 500.0 INR - crosin [Tag: medicen]
 2025-05-16 11:32:52 - Credit: 500.0 INR - money [Tag: moeny]
+2025-05-16 12:29:25 - Debit: 50.0 INR - momos [Tag: Food]
+2025-05-16 12:29:44 - Credit: 10000.0 INR - job [Tag: Salary]

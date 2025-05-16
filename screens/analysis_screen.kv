@@ -1,5 +1,6 @@
 #:import get_color utils.theme.get_color
 #:import dp kivy.metrics.dp
+#:import PieChart widgets.pie_chart.PieChart
 
 <AnalysisScreen>:
     canvas.before:
@@ -14,59 +15,66 @@
         padding: dp(10)
         spacing: dp(10)
 
-        BoxLayout: # Header with Back button
+        # Header with Back button
+        BoxLayout:
             size_hint_y: None
             height: dp(50)
+            padding: [dp(5), dp(5)]
+            spacing: dp(10)
+            canvas.before:
+                Color:
+                    rgba: get_color(app.theme, "primary_color")[:3] + [0.1]
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(15)]
+
             Button:
-                text: '< Back'
                 size_hint_x: None
-                width: dp(80)
-                background_color: get_color(app.theme, "secondary_color")
-                color: get_color(app.theme, "text_color")
-                background_normal: ''
-                background_down: ''
-                canvas.before:
-                    Color:
-                        rgba: get_color(app.theme, "secondary_color") if self.state == 'normal' else [c*0.8 for c in get_color(app.theme, "secondary_color")[:3]] + [1]
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [dp(5)]
+                width: dp(40)
+                background_color: [0,0,0,0]
                 on_press: root.go_back()
+                Image:
+                    source: "assets/back_icon.png" if app.theme == "light" else "assets/back_icon_dark.png"
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: dp(24), dp(24)
+                    color: get_color(app.theme, "text_color")
+            
             Label:
                 text: "Financial Analysis"
                 font_size: '20sp'
                 bold: True
                 color: get_color(app.theme, "text_color")
-                halign: 'center'
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.width, None
 
         ScrollView:
             bar_width: dp(10)
             bar_color: get_color(app.theme, "primary_color")[:3] + [0.7]
-            effect_cls: "ScrollEffect" # Smooth scrolling
+            effect_cls: "ScrollEffect"
             BoxLayout:
                 orientation: 'vertical'
                 size_hint_y: None
                 height: self.minimum_height
-                spacing: dp(20) # Increased spacing between major sections
+                spacing: dp(20)
                 padding: dp(10)
 
                 # Status Label (Loading or No Data)
                 Label:
-                    id: status_label
-                    text: "Generating analysis..." if root.is_loading else ("No data available for analysis." if not root.plot_source and not root.stats else "")
-                    opacity: 1 if root.is_loading or (not root.is_loading and not root.plot_source and not root.stats) else 0
+                    text: "Loading analysis..." if root.is_loading else "No data available. Add some transactions first!" if not root.plot_source else ""
+                    color: get_color(app.theme, "secondary_text")
                     size_hint_y: None
-                    height: self.texture_size[1] if self.opacity == 1 else 0
-                    color: get_color(app.theme, "text_color")[:3] + [0.7]
-                    font_size: '16sp'
-                    padding_y: dp(50) if self.opacity == 1 else 0
-                    halign: 'center'
-
-                # Image for the plot
-                BoxLayout: # Wrapper for plot to add a subtle card look if plot exists
+                    height: dp(40) if root.is_loading or not root.plot_source else 0
+                    opacity: 1 if root.is_loading or not root.plot_source else 0
+                    font_style: 'italic'
+                
+                # PieChart widget for visualizing data
+                BoxLayout:
                     size_hint_y: None
-                    height: dp(310) if root.plot_source else 0 # Fixed height for the card
+                    height: dp(310) if root.plot_source else 0
                     opacity: 1 if root.plot_source else 0
                     padding: dp(5)
                     canvas.before:
@@ -76,13 +84,13 @@
                             pos: self.pos
                             size: self.size
                             radius: [dp(8)]
-                    Image:
-                        id: analysis_image
-                        source: root.plot_source
-                        allow_stretch: True
-                        keep_ratio: True
-                        # size_hint_y: None # Handled by parent
-                        # height: dp(300) if root.plot_source else 0 # Handled by parent
+                    
+                    PieChart:
+                        id: analysis_chart
+                        data_values: root.chart_data.get('values', []) if root.chart_data else []
+                        data_labels: root.chart_data.get('categories', []) if root.chart_data else []
+                        data_colors: root.chart_data.get('colors', []) if root.chart_data else []
+                        title: "Income vs Expenses"
 
                 # Statistics Section Wrapper
                 BoxLayout:
@@ -92,7 +100,6 @@
                     opacity: 1 if root.stats else 0
                     disabled: not root.stats
                     spacing: dp(10) # Spacing between title and list of stats
-                    # padding: [0, dp(10)] # Padding for the whole stats section
 
                     Label: # Statistics Title
                         text: "Key Statistics"
@@ -206,11 +213,6 @@
                                     pos: self.pos
                                     size: self.size
                                     radius: [dp(6)]
-                                # Optional: Add a border
-                                # Line:
-                                #     rounded_rectangle: (self.x, self.y, self.width, self.height, dp(6))
-                                #     width: dp(1.2)
-                                #     color: get_color(app.theme, "primary_color")
                             Label:
                                 text: "Current Balance:"
                                 halign: 'left'

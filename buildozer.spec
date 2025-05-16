@@ -35,7 +35,7 @@ version = 0.1
 # version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements - SIMPLIFIED to avoid GStreamer issues
-requirements = python3==3.9,kivy==2.1.0,pillow,sqlite3
+requirements = python3==3.9,kivy==2.1.0,pillow,sqlite3,kivy_garden.graph
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

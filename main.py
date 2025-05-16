@@ -5,6 +5,7 @@ from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.metrics import dp
 from database import init_db, get_transactions # Import get_transactions
+from widgets.pie_chart import PieChart
 import os
 
 # Import screens
